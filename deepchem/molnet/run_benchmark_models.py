@@ -248,7 +248,7 @@ def benchmark_classification(
       n_estimators = hyper_parameters['n_estimators']
       learning_rate = hyper_parameters['eta']
       early_stopping_rounds = hyper_parameters['early_stopping_rounds']
-
+      nb_epoch = None
       # Building xgboost model. Use Scikit-learn wrapper interface of xgboost
       def model_builder(model_dir_xgb):
           xgboost_model = xgb.XGBClassifier(
