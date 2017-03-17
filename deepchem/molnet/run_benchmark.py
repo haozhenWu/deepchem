@@ -27,16 +27,16 @@ def run_benchmark(datasets,
                   test=False):
   """
   Run benchmark test on designated datasets with deepchem(or user-defined) model
-  
+
   Parameters
   ----------
   datasets: list of string
-      choice of which datasets to use, should be: tox21, muv, sider, 
+      choice of which datasets to use, should be: tox21, muv, sider,
       toxcast, pcba, delaney, kaggle, nci, clintox, hiv, pdbbind, chembl,
       qm7, qm7b, qm9, sampl
   model: string or user-defined model stucture
       choice of which model to use, deepchem provides implementation of
-      logistic regression, random forest, multitask network, 
+      logistic regression, random forest, multitask network,
       bypass multitask network, irv, graph convolution;
       for user define model, it should include function: fit, evaluate
   split: string,  optional (default=None)
@@ -82,7 +82,7 @@ def run_benchmark(datasets,
         n_features = 75
       elif model in [
           'tf', 'tf_robust', 'logreg', 'rf', 'irv', 'tf_regression',
-          'rf_regression'
+          'rf_regression','xgb_classifier'
       ]:
         featurizer = 'ECFP'
         n_features = 1024

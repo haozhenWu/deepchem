@@ -91,3 +91,9 @@ hps['graphconvreg'] = {
     'n_fully_connected_nodes': 256,
     'seed': 123
 }
+hps['xgb_classifier'] = {
+    'max_depth':5,
+    'eta':0.3,
+    'n_estimators':500,
+    'early_stopping_rounds':20
+}

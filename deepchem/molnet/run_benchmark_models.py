@@ -31,7 +31,7 @@ def benchmark_classification(
     seed=123,):
   """
   Calculate performance of different models on the specific dataset & tasks
-  
+
   Parameters
   ----------
   train_dataset: dataset struct
@@ -55,7 +55,7 @@ def benchmark_classification(
       whether to calculate test_set performance
   hyper_parameters: dict, optional (default=None)
       hyper parameters for designated model, None = use preset values
-  
+
 
   Returns
   -------
@@ -65,7 +65,7 @@ def benchmark_classification(
 	predicting results(AUC) on valid set
   test_scores : dict
 	predicting results(AUC) on test set
- 
+
 
   """
   train_scores = {}
@@ -78,7 +78,7 @@ def benchmark_classification(
   model_name = model
 
   if model_name == 'tf':
-    # Loading hyper parameters    
+    # Loading hyper parameters
     layer_sizes = hyper_parameters['layer_sizes']
     weight_init_stddevs = hyper_parameters['weight_init_stddevs']
     bias_init_consts = hyper_parameters['bias_init_consts']
@@ -234,6 +234,30 @@ def benchmark_classification(
 
     model = deepchem.models.multitask.SingletaskToMultitask(tasks,
                                                             model_builder)
+  elif model_name == 'xgb_classifier':
+      # Loading hyper parameters
+
+      # temp fake parameters
+      hyper_parameters = {'max_depth':5, 'eta':0.3, 'silent':1,
+                            'objective':'binary:logistic','booster':'gbtree',
+                            'n_estimators':30,
+                            'early_stopping_rounds':20 }
+
+      max_depth = hyper_parameters['max_depth']
+      n_estimators = hyper_parameters['n_estimators']
+      learning_rate = hyper_parameters['eta']
+      early_stopping_rounds = hyper_parameters['early_stopping_rounds']
+
+      # Building xgboost model. Use Scikit-learn wrapper interface of xgboost
+      def model_builder(model_dir_xgb):
+          xgboost_model = xgb.XGBClassifier(
+                max_depth=max_depth, n_estimators=n_estimators,
+                learning_rate=learning_rate)
+          return deepchem.models.xgboost_models.XGBoostModel(xgboost_model,
+                                                            model_dir_xgb)
+
+      model = deepchem.models.multitask.SingletaskToMultitask(tasks,
+                                                            model_builder)
 
   if nb_epoch is None:
     model.fit(train_dataset)
@@ -262,7 +286,7 @@ def benchmark_regression(
     seed=123,):
   """
   Calculate performance of different models on the specific dataset & tasks
-  
+
   Parameters
   ----------
   train_dataset: dataset struct
@@ -286,7 +310,7 @@ def benchmark_regression(
       whether to calculate test_set performance
   hyper_parameters: dict, optional (default=None)
       hyper parameters for designated model, None = use preset values
-  
+
 
   Returns
   -------
@@ -296,7 +320,7 @@ def benchmark_regression(
 	predicting results(AUC) on valid set
   test_scores : dict
 	predicting results(AUC) on test set
- 
+
   """
   train_scores = {}
   valid_scores = {}
