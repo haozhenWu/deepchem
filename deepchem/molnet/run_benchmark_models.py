@@ -15,7 +15,7 @@ import deepchem
 from deepchem.molnet.preset_hyper_parameters import hps
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
-
+import xgboost as xgb
 
 def benchmark_classification(
     train_dataset,
