@@ -5,6 +5,7 @@ Use Scikit-learn wrapper interface of xgboost
 import xgboost as xgb
 import numpy as np
 from deepchem.models import Model
+from deepchem.models import sklearn_models
 from deepchem.utils.save import load_from_disk
 from deepchem.utils.save import save_to_disk
 
