@@ -8,6 +8,7 @@ from deepchem.models import Model
 from deepchem.models.sklearn_models import SklearnModel
 from deepchem.utils.save import load_from_disk
 from deepchem.utils.save import save_to_disk
+from sklearn.cross_validation import train_test_split
 
 class XGBoostModel(SklearnModel):
   """
