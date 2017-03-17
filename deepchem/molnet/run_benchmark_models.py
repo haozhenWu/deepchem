@@ -72,7 +72,8 @@ def benchmark_classification(
   valid_scores = {}
   test_scores = {}
 
-  assert model in ['rf', 'tf', 'tf_robust', 'logreg', 'irv', 'graphconv']
+  assert model in ['rf', 'tf', 'tf_robust', 'logreg', 'irv', 'graphconv',
+                    'xgb_classifier']
   if hyper_parameters is None:
     hyper_parameters = hps[model]
   model_name = model
