@@ -7,18 +7,18 @@ Created on Tue Oct 18 15:53:27 2016
 
 Benchmark test:
 
-Giving classification performances of: 
-    Random forest(rf), MultitaskDNN(tf), 
+Giving classification performances of:
+    Random forest(rf), MultitaskDNN(tf),
     RobustMultitaskDNN(tf_robust),
     Logistic regression(logreg), IRV(irv)
-    Graph convolution(graphconv)                 
+    Graph convolution(graphconv)
 on datasets: muv, pcba, tox21, sider, toxcast, clintox, hiv
 
 Giving regression performances of:
     MultitaskDNN(tf_regression),
     Random forest(rf_regression),
     Graph convolution regression(graphconvreg)
-on datasets: delaney(ESOL), nci, kaggle, pdbbind, 
+on datasets: delaney(ESOL), nci, kaggle, pdbbind,
              qm7, qm7b, qm9, chembl, sampl(FreeSolv)
 
 time estimation listed in README file
@@ -67,13 +67,13 @@ def benchmark_loading_datasets(hyper_parameters,
                                test=False):
   """
   Loading dataset for benchmark test
-  
+
   Parameters
   ----------
   hyper_parameters: dict
       hyper parameters including layer size, dropout, learning rate, etc.
   dataset: string, optional (default='tox21')
-      choice of which dataset to use, should be: tox21, muv, sider, 
+      choice of which dataset to use, should be: tox21, muv, sider,
       toxcast, pcba, delaney, kaggle, nci, clintox, hiv, pdbbind, chembl,
       qm7, qm7b, qm9, sampl
   model: string,  optional (default='tf')
@@ -273,7 +273,7 @@ def benchmark_classification(train_dataset,
                              test=False):
   """
   Calculate performance of different models on the specific dataset & tasks
-  
+
   Parameters
   ----------
   train_dataset: dataset struct
@@ -293,7 +293,7 @@ def benchmark_classification(train_dataset,
       irv, graphconv
   test: boolean
       whether to calculate test_set performance
-  
+
 
   Returns
   -------
@@ -303,7 +303,7 @@ def benchmark_classification(train_dataset,
 	predicting results(AUC) on valid set
   test_scores : dict
 	predicting results(AUC) on test set
- 
+
 
   """
   train_scores = {}
@@ -581,32 +581,32 @@ def benchmark_classification(train_dataset,
     reg_lambda = hyper_parameters['reg_lambda']
     scale_pos_weight = hyper_parameters['scale_pos_weight']
     base_score = hyper_parameters['base_score']
-    seed = hyper_parameters['seed'] 
+    seed = hyper_parameters['seed']
     early_stopping_rounds = hyper_parameters['early_stopping_rounds']
 
-    esr = {'early_stopping_rounds' : early_stopping_rounds}    
+    esr = {'early_stopping_rounds' : early_stopping_rounds}
     # Building xgboost classification model
     def model_builder(model_dir_xgb):
-	xgboost_model = xgboost.XGBClassifier(
-	  max_depth=max_depth,
-	  learning_rate=learning_rate,
-	  n_estimators=n_estimators,
-	  gamma=gamma,
-	  min_child_weight=min_child_weight,
-	  max_delta_step=max_delta_step,
-   	  subsample=subsample,
-	  colsample_bytree=colsample_bytree,
-	  colsample_bylevel=colsample_bylevel,
-	  reg_alpha=reg_alpha,
-	  reg_lambda=reg_lambda,
-	  scale_pos_weight=scale_pos_weight,
-	  base_score=base_score,
- 	  seed=seed)
-	return deepchem.models.xgboost_models.XGBoostModel(xgbost_model,
-							   model_dir_xgb,
-							   **esr)  
+        xgboost_model = xgboost.XGBClassifier(
+            max_depth=max_depth,
+            learning_rate=learning_rate,
+            n_estimators=n_estimators,
+            gamma=gamma,
+            min_child_weight=min_child_weight,
+            max_delta_step=max_delta_step,
+            subsample=subsample,
+            colsample_bytree=colsample_bytree,
+            colsample_bylevel=colsample_bylevel,
+            reg_alpha=reg_alpha,
+            reg_lambda=reg_lambda,
+            scale_pos_weight=scale_pos_weight,
+            base_score=base_score,
+            seed=seed)
+        return deepchem.models.xgboost_models.XGBoostModel(xgbost_model,
+                                                            model_dir_xgb,
+                                                            **esr)
     model_xgb = dc.models.multitask.SingletaskToMultitask(tasks, model_builder)
-	
+
     print('-------------------------------------')
     print('Start fitting by xgoost')
     model_xgb.fit(train_dataset)
@@ -621,8 +621,8 @@ def benchmark_classification(train_dataset,
     if test:
       test_scores['xgb_classifier'] = model_xgb.evaluate(
           test_dataset, [classification_metric], transformers)
- 
-  
+
+
   return train_scores, valid_scores, test_scores
 
 
@@ -640,7 +640,7 @@ def benchmark_regression(train_dataset,
                          test=False):
   """
   Calculate performance of different models on the specific dataset & tasks
-  
+
   Parameters
   ----------
   train_dataset: dataset struct
@@ -659,17 +659,17 @@ def benchmark_regression(train_dataset,
       choice of which model to use, should be: tf_regression, graphconvreg,
       rf_regression
   test: boolean
-      whether to calculate test_set performance  
+      whether to calculate test_set performance
 
   Returns
   -------
   train_scores: dict
       predicting results(R2 or mae) on training set
   valid_scores: dict
-      predicting results(R2 or mae) on valid set  
+      predicting results(R2 or mae) on valid set
   test_scores : dict
 	predicting results(R2 or mae) on test set
- 
+
   """
   train_scores = {}
   valid_scores = {}
@@ -965,7 +965,7 @@ if __name__ == '__main__':
       'n_fully_connected_nodes': 256,
       'seed': 123
   }]
- 
+
   hps['xgb_classifier'] = [{
       'max_depth': 6,
       'learning_rate': 0.1,
