@@ -56,7 +56,7 @@ from qm9.qm9_datasets import load_qm9
 from sampl.sampl_datasets import load_sampl
 from clintox.clintox_datasets import load_clintox
 from hiv.hiv_datasets import load_hiv
-
+import xgboost
 
 def benchmark_loading_datasets(hyper_parameters,
                                dataset='tox21',
@@ -101,6 +101,7 @@ def benchmark_loading_datasets(hyper_parameters,
     n_features = 75
   elif model in [
       'tf', 'tf_robust', 'logreg', 'rf', 'irv', 'tf_regression', 'rf_regression'
+       ,'xgb_classifier','xgb_regression'
   ]:
     featurizer = 'ECFP'
     n_features = 1024
@@ -313,7 +314,8 @@ def benchmark_classification(train_dataset,
   if metric == 'auc':
     classification_metric = dc.metrics.Metric(dc.metrics.roc_auc_score, np.mean)
 
-  assert model in ['rf', 'tf', 'tf_robust', 'logreg', 'irv', 'graphconv']
+  assert model in ['rf', 'tf', 'tf_robust', 'logreg', 'irv', 'graphconv',
+		   'xgb_classifier']
 
   if model == 'tf':
     # Loading hyper parameters
@@ -564,6 +566,63 @@ def benchmark_classification(train_dataset,
       test_scores['rf'] = model_rf.evaluate(
           test_dataset, [classification_metric], transformers)
 
+  if model == 'xgb_classifier':
+    # Loading hyper parameters
+    max_depth = hyper_parameters['max_depth']
+    learning_rate = hyper_parameters['learning_rate']
+    n_estimators = hyper_parameters['n_estimators']
+    gamma = hyper_parameters['gamma']
+    min_child_weight = hyper_parameters['min_child_weight']
+    max_delta_step = hyper_parameters['max_delta_step']
+    subsample = hyper_parameters['subsample']
+    colsample_bytree = hyper_parameters['colsample_bytree']
+    colsample_bylevel = hyper_parameters['colsample_bylevel']
+    reg_alpha = hyper_parameters['reg_alpha']
+    reg_lambda = hyper_parameters['reg_lambda']
+    scale_pos_weight = hyper_parameters['scale_pos_weight']
+    base_score = hyper_parameters['base_score']
+    seed = hyper_parameters['seed'] 
+    early_stopping_rounds = hyper_parameters['early_stopping_rounds']
+
+    esr = {'early_stopping_rounds' : early_stopping_rounds}    
+    # Building xgboost classification model
+    def model_builder(model_dir_xgb):
+	xgboost_model = xgboost.XGBClassifier(
+	  max_depth=max_depth,
+	  learning_rate=learning_rate,
+	  n_estimators=n_estimators,
+	  gamma=gamma,
+	  min_child_weight=min_child_weight,
+	  max_delta_step=max_delta_step,
+   	  subsample=subsample,
+	  colsample_bytree=colsample_bytree,
+	  colsample_bylevel=colsample_bylevel,
+	  reg_alpha=reg_alpha,
+	  reg_lambda=reg_lambda,
+	  scale_pos_weight=scale_pos_weight,
+	  base_score=base_score,
+ 	  seed=seed)
+	return deepchem.models.xgboost_models.XGBoostModel(xgbost_model,
+							   model_dir_xgb,
+							   **esr)  
+    model_xgb = dc.models.multitask.SingletaskToMultitask(tasks, model_builder)
+	
+    print('-------------------------------------')
+    print('Start fitting by xgoost')
+    model_xgb.fit(train_dataset)
+
+    # Evaluating xgboost classification model
+    train_scores['xgb_classifier'] = model_xgb.evaluate(
+        train_dataset, [classification_metric], transformers)
+
+    valid_scores['xgb_classifier'] = model_xgb.evaluate(
+       valid_dataset, [classification_metric], transformers)
+
+    if test:
+      test_scores['xgb_classifier'] = model_xgb.evaluate(
+          test_dataset, [classification_metric], transformers)
+ 
+  
   return train_scores, valid_scores, test_scores
 
 
@@ -788,7 +847,8 @@ if __name__ == '__main__':
       dest='model_args',
       default=[],
       help='Choice of model: tf, tf_robust, logreg, rf, irv, graphconv, ' +
-      'tf_regression, rf_regression, graphconvreg')
+      'tf_regression, rf_regression, graphconvreg, xgb_classifier, ' +
+      'xgb_regression')
   parser.add_argument(
       '-d',
       action='append',
@@ -905,6 +965,23 @@ if __name__ == '__main__':
       'n_fully_connected_nodes': 256,
       'seed': 123
   }]
+ 
+  hps['xgb_classifier'] = [{
+      'max_depth': 6,
+      'learning_rate': 0.1,
+      'n_estimators': 1000,
+      'gamma': 0,
+      'min_child_weight': 5,
+      'max_delta_step': 1,
+      'subsample': 0.53,
+      'colsample_bytree': 0.7,
+      'colsample_bylevel': 1,
+      'reg_alpha': 0,
+      'reg_lambda': 1,
+      'scale_pos_weight': 1,
+      'seed': 2016,
+      'early_stopping_rounds': 100
+  }]
 
   for split in splitters:
     for dataset in datasets:
@@ -912,7 +989,7 @@ if __name__ == '__main__':
           'tox21', 'sider', 'muv', 'toxcast', 'pcba', 'clintox', 'hiv'
       ]:
         for model in models:
-          if model in ['tf', 'tf_robust', 'logreg', 'graphconv', 'rf', 'irv']:
+          if model in ['tf', 'tf_robust', 'logreg', 'graphconv', 'rf', 'irv', 'xgb_classifier']:
             benchmark_loading_datasets(
                 hps,
                 dataset=dataset,
@@ -922,7 +999,7 @@ if __name__ == '__main__':
                 test=test)
       else:
         for model in models:
-          if model in ['tf_regression', 'rf_regression', 'graphconvreg']:
+          if model in ['tf_regression', 'rf_regression', 'graphconvreg', 'xgb_regression']:
             benchmark_loading_datasets(
                 hps,
                 dataset=dataset,
