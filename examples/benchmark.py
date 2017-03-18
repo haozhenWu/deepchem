@@ -602,7 +602,7 @@ def benchmark_classification(train_dataset,
             scale_pos_weight=scale_pos_weight,
             base_score=base_score,
             seed=seed)
-        return deepchem.models.xgboost_models.XGBoostModel(xgbost_model,
+        return dc.models.xgboost_models.XGBoostModel(xgboost_model,
                                                             model_dir_xgb,
                                                             **esr)
     model_xgb = dc.models.multitask.SingletaskToMultitask(tasks, model_builder)
@@ -979,6 +979,7 @@ if __name__ == '__main__':
       'reg_alpha': 0,
       'reg_lambda': 1,
       'scale_pos_weight': 1,
+      'base_score': 0.5,
       'seed': 2016,
       'early_stopping_rounds': 100
   }]
