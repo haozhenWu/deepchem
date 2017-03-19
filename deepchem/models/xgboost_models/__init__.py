@@ -38,7 +38,7 @@ class XGBoostModel(SklearnModel):
     if 'early_stopping_rounds' in kwargs:
        	self.early_stopping_rounds = kwargs['early_stopping_rounds']
     else:
-	self.early_stopping_rounds = 50
+        self.early_stopping_rounds = 50
 
 
   def fit(self, dataset, **kwargs):

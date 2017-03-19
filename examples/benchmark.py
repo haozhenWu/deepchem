@@ -682,7 +682,8 @@ def benchmark_regression(train_dataset,
     regression_metric = dc.metrics.Metric(dc.metrics.mean_absolute_error,
                                           np.mean)
 
-  assert model in ['tf_regression', 'rf_regression', 'graphconvreg']
+  assert model in ['tf_regression', 'rf_regression', 'graphconvreg',
+                    'xgb_regression']
 
   if model == 'tf_regression':
     # Loading hyper parameters
