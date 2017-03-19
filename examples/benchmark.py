@@ -1023,14 +1023,32 @@ if __name__ == '__main__':
   }]
 
   hps['xgb_classifier'] = [{
-      'max_depth': 6,
-      'learning_rate': 0.1,
-      'n_estimators': 1000,
+      'max_depth': 5,
+      'learning_rate': 0.05,
+      'n_estimators': 3000,
       'gamma': 0,
       'min_child_weight': 5,
       'max_delta_step': 1,
       'subsample': 0.53,
-      'colsample_bytree': 0.7,
+      'colsample_bytree': 0.66,
+      'colsample_bylevel': 1,
+      'reg_alpha': 0,
+      'reg_lambda': 1,
+      'scale_pos_weight': 1,
+      'base_score': 0.5,
+      'seed': 2016,
+      'early_stopping_rounds': 100
+  }]
+
+  hps['xgb_regression'] = [{
+      'max_depth': 5,
+      'learning_rate': 0.05,
+      'n_estimators': 3000,
+      'gamma': 0,
+      'min_child_weight': 5,
+      'max_delta_step': 1,
+      'subsample': 0.53,
+      'colsample_bytree': 0.66,
       'colsample_bylevel': 1,
       'reg_alpha': 0,
       'reg_lambda': 1,
