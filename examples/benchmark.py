@@ -825,6 +825,62 @@ def benchmark_regression(train_dataset,
       test_scores['rf_regression'] = model_rf_regression.evaluate(
           test_dataset, [regression_metric], transformers)
 
+  if model == 'xgb_regression':
+    # Loading hyper parameters
+    max_depth = hyper_parameters['max_depth']
+    learning_rate = hyper_parameters['learning_rate']
+    n_estimators = hyper_parameters['n_estimators']
+    gamma = hyper_parameters['gamma']
+    min_child_weight = hyper_parameters['min_child_weight']
+    max_delta_step = hyper_parameters['max_delta_step']
+    subsample = hyper_parameters['subsample']
+    colsample_bytree = hyper_parameters['colsample_bytree']
+    colsample_bylevel = hyper_parameters['colsample_bylevel']
+    reg_alpha = hyper_parameters['reg_alpha']
+    reg_lambda = hyper_parameters['reg_lambda']
+    scale_pos_weight = hyper_parameters['scale_pos_weight']
+    base_score = hyper_parameters['base_score']
+    seed = hyper_parameters['seed']
+    early_stopping_rounds = hyper_parameters['early_stopping_rounds']
+
+    esr = {'early_stopping_rounds' : early_stopping_rounds}
+    # Building xgboost classification model
+    def model_builder(model_dir_xgb):
+        xgboost_model = xgboost.XGBRegressor(
+            max_depth=max_depth,
+            learning_rate=learning_rate,
+            n_estimators=n_estimators,
+            gamma=gamma,
+            min_child_weight=min_child_weight,
+            max_delta_step=max_delta_step,
+            subsample=subsample,
+            colsample_bytree=colsample_bytree,
+            colsample_bylevel=colsample_bylevel,
+            reg_alpha=reg_alpha,
+            reg_lambda=reg_lambda,
+            scale_pos_weight=scale_pos_weight,
+            base_score=base_score,
+            seed=seed)
+        return dc.models.xgboost_models.XGBoostModel(xgboost_model,
+                                                            model_dir_xgb,
+                                                            **esr)
+    model_xgb = dc.models.multitask.SingletaskToMultitask(tasks, model_builder)
+
+    print('-------------------------------------')
+    print('Start fitting by xgoost')
+    model_xgb.fit(train_dataset)
+
+    # Evaluating xgboost classification model
+    train_scores['xgb_regression'] = model_xgb.evaluate(
+        train_dataset, [classification_metric], transformers)
+
+    valid_scores['xgb_regression'] = model_xgb.evaluate(
+       valid_dataset, [classification_metric], transformers)
+
+    if test:
+      test_scores['xgb_regression'] = model_xgb.evaluate(
+          test_dataset, [classification_metric], transformers)
+
   return train_scores, valid_scores, test_scores
 
 
