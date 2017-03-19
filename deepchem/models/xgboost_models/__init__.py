@@ -9,6 +9,7 @@ from deepchem.models.sklearn_models import SklearnModel
 from deepchem.utils.save import load_from_disk
 from deepchem.utils.save import save_to_disk
 from sklearn.cross_validation import train_test_split
+from sklearn.grid_search import GridSearchCV
 
 class XGBoostModel(SklearnModel):
   """
@@ -38,7 +39,7 @@ class XGBoostModel(SklearnModel):
        	self.early_stopping_rounds = kwargs['early_stopping_rounds']
     else:
 	self.early_stopping_rounds = 50
-    
+
 
   def fit(self, dataset, **kwargs):
     """
@@ -48,21 +49,62 @@ class XGBoostModel(SklearnModel):
     y = np.squeeze(dataset.y)
     w = np.squeeze(dataset.w)
     seed = self.model_instance.seed
+    if isinstance(self.model_instance,xgb.XGBClassifier):
+        xgb_metric = "auc"
+        sklearn_metric = "roc_auc"
+    else isinstance(self.model_instance,xgb.XGBRegressor):
+        xgb_metric = "mae"
+        sklearn_metric = "neg_mean_absolute_error"
+
+    best_param = self._search_param(sklearn_metric)
+    # update model with best param
+    self.model_instance = self.model_class(**best_param)
+
+    # Find optimal n_estimators based on original learning_rate
+    # and early_stopping_rounds
     X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                         test_size = 0.2,
                                                         random_state=seed,
                                                         stratify=y)
-    if isinstance(self.model_instance,xgb.XGBClassifier):
-	metric = "auc"
-    else isinstance(self.model_instance,xgb.XGBRegressor):
-	metric = "mae"
-    self.model_instance.fit(X_train, y_train, 
-			    early_stopping_rounds=self.early_stopping_rounds,
-                            eval_metric=metric,eval_set=[(X_test, y_test)],
+
+    self.model_instance.fit(X_train, y_train,
+			                early_stopping_rounds=self.early_stopping_rounds,
+                            eval_metric=xgb_metric,eval_set=[(X_test, y_test)],
                             verbose=self.verbose)
     # Since test size is 20%, when retrain model to whole data, expect
     # n_estimator increased to 1/0.8 = 1.25 time.
     estimated_best_round = np.round(self.model_instance.best_ntree_limit * 1.25)
     self.model_instance.n_estimators = np.int64(estimated_best_round)
-    self.model_instance.fit(X_train, y_train, eval_metric=metric, 
+    self.model_instance.fit(X_train, y_train, eval_metric=xgb_metric,
 			    verbose=self.verbose)
+
+  def _search_param(self,metric):
+    '''
+    Find best potential parameters set using few n_estimators
+    '''
+    # Make sure user specified params are in the grid.
+    max_depth_grid = list(np.unique([self.model_instance.max_depth,5,7]))
+    param_grid = {
+                  'max_depth'=max_depth_grid,
+                  'learning_rate'=max(self.model_instance.learning_rate,0.3),
+                  'n_estimators'=min(self.model_instance.n_estimators,100),
+                  'gamma'=self.model_instance.gamma,
+                  'min_child_weight'=self.model_instance.min_child_weight,
+                  'max_delta_step'=self.model_instance.max_delta_step,
+                  'subsample'=self.model_instance.subsample,
+                  'colsample_bytree'=self.model_instance.colsample_bytree,
+                  'colsample_bylevel'=self.model_instance.colsample_bylevel,
+                  'reg_alpha'=self.model_instance.reg_alpha,
+                  'reg_lambda'=self.model_instance.reg_lambda,
+                  'scale_pos_weight'=self.model_instance.scale_pos_weight,
+                  'base_score'=self.model_instance.base_score,
+                  'seed'=self.model_instance.seed
+    }
+    grid_search = GridSearchCV(self.model_instance, param_grid, cv=2, refit=False,
+                                scoring=metric)
+    grid_search.fit(X,y)
+    best_params = grid_search.best_params_
+    # Change params back original params
+    best_params['learning_rate'] = self.model_instance.learning_rate
+    best_params['n_estimators'] = self.model_instance.n_estimators
+    return best_params
