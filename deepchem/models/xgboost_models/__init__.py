@@ -84,21 +84,25 @@ class XGBoostModel(SklearnModel):
     '''
     # Make sure user specified params are in the grid.
     max_depth_grid = list(np.unique([self.model_instance.max_depth,5,7]))
+    colsample_bytree_grid = list(np.unique(
+                                [self.model_instance.colsample_tree,0.66,0.9]))
+    reg_lambda_grid = list(np.unique(
+                                [self.model_instance.reg_lambda,1,5]))
     param_grid = {
-                  'max_depth'=max_depth_grid,
-                  'learning_rate'=max(self.model_instance.learning_rate,0.3),
-                  'n_estimators'=min(self.model_instance.n_estimators,100),
-                  'gamma'=self.model_instance.gamma,
-                  'min_child_weight'=self.model_instance.min_child_weight,
-                  'max_delta_step'=self.model_instance.max_delta_step,
-                  'subsample'=self.model_instance.subsample,
-                  'colsample_bytree'=self.model_instance.colsample_bytree,
-                  'colsample_bylevel'=self.model_instance.colsample_bylevel,
-                  'reg_alpha'=self.model_instance.reg_alpha,
-                  'reg_lambda'=self.model_instance.reg_lambda,
-                  'scale_pos_weight'=self.model_instance.scale_pos_weight,
-                  'base_score'=self.model_instance.base_score,
-                  'seed'=self.model_instance.seed
+                  'max_depth': max_depth_grid,
+                  'learning_rate': [max(self.model_instance.learning_rate,0.3)],
+                  'n_estimators': [min(self.model_instance.n_estimators,60)],
+                  'gamma': [self.model_instance.gamma],
+                  'min_child_weight': [self.model_instance.min_child_weight],
+                  'max_delta_step': [self.model_instance.max_delta_step],
+                  'subsample': [self.model_instance.subsample],
+                  'colsample_bytree': colsample_bytree_grid,
+                  'colsample_bylevel': [self.model_instance.colsample_bylevel],
+                  'reg_alpha': [self.model_instance.reg_alpha],
+                  'reg_lambda': reg_lambda_grid,
+                  'scale_pos_weight': [self.model_instance.scale_pos_weight],
+                  'base_score': [self.model_instance.base_score],
+                  'seed': [self.model_instance.seed]
     }
     grid_search = GridSearchCV(self.model_instance, param_grid, cv=2,
                                 refit=False, scoring=metric)
